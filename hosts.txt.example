@@ -1,0 +1,6 @@
+# One server per line: a host name, an ssh alias, or an IP address. Text after # is ignored.
+
+gpu-node01.example.edu
+gpu-node02.example.edu
+192.0.2.21            # rack 3, top
+192.0.2.22
