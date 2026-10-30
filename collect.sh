@@ -21,6 +21,8 @@ case $kind in
     *)     echo "usage: $0 HOSTS_FILE user|root|usage"; exit 1 ;;
 esac
 [ -r "$hosts" ] || { echo "cannot read $hosts"; exit 1; }
+limit=900                                   # seconds allowed per server
+[ "$kind" = usage ] && limit=120            # so a usage run from cron ends before the next one starts
 
 umask 077                                   # reports hold usernames, addresses and serial numbers
 mkdir -p reports
@@ -30,7 +32,7 @@ failed=reports/not-collected-$kind.log      # listed at the top of index.html
 run_one() {
     host=$1
     out=reports/$host-$kind.txt
-    timeout 900 ssh -o BatchMode=yes -o ConnectTimeout=10 $SSH_OPTS "$host" "$remote" < "$script" > "$out.new" 2> "$out.err"
+    timeout $limit ssh -o BatchMode=yes -o ConnectTimeout=10 $SSH_OPTS "$host" "$remote" < "$script" > "$out.new" 2> "$out.err"
     if ! grep -q '^== END' "$out.new"; then
         echo "FAILED  $host: $(grep -v '^Warning: Permanently added' "$out.err" | tail -1)" | tee -a "$failed"
         rm -f "$out.new"
