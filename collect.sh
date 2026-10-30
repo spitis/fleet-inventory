@@ -26,6 +26,8 @@ limit=900                                   # seconds allowed per server
 
 umask 077                                   # reports hold usernames, addresses and serial numbers
 mkdir -p reports
+exec 9> "reports/.lock-$kind"                # one run of each kind at a time
+flock -n 9 || { echo "a $kind run is still going; skipped"; exit 1; }
 failed=reports/not-collected-$kind.log      # listed at the top of index.html
 : > "$failed"
 
